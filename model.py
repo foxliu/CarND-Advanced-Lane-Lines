@@ -39,8 +39,9 @@ class PipleLine(object):
 
 
 pipline = PipleLine(camera_wide_dist_file)
-img_thresh = ImageThresh(r_thresh=(170, 255), s_thresh=(90, 255))
-fun_names = ['s_r_threshhold','r_threshshold', 's_threshhold']
+img_thresh = ImageThresh(r_thresh=(170, 255), s_thresh=(200, 255))
+fun_names = ['s_r_threshhold','r_threshshold', 's_threshhold', 'l_b_threshhold', 'x_b_threshhold']
+# fun_names = ['l_b_threshhold']
 pre = PreProcess(img_thresh, pipline.Minv, fun_names)
 
 def process_image(image):

@@ -157,13 +157,14 @@ class PreProcess(object):
         """
         Method to determine radius of curvature and distance from lane center
         """
+        # Todo: 可以在这里添加一个过滤，如果没有找到合适的路线，那就在已经找到中使用最合适的，或是使用上一下图像的
         for fun_name in self.fun_names:
             result, ex = self.add_to_line(warped_img, fun_name, margin=margin)
             if result:
                 break
         else:
             print('notfound fun is: ', ex.args)
-            cv2.imwrite('output_images/test_{}.jpg'.format(self.i), warped_img)
+            # cv2.imwrite('output_images/test_{}.jpg'.format(self.i), warped_img)
             self.i += 1
             self.l_line.current_fit = []
             self.r_line.current_fit = []

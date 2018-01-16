@@ -7,7 +7,8 @@ import numpy as np
 
 class ImageThresh(object):
     def __init__(self, s_thresh=(170, 255), r_thresh=(200, 255), x_thresh=(20, 100), y_thresh=(20, 100),
-                 m_thresh=(30, 100), d_thresh=(0.7, 1.3), h_thresh=(15, 100), l_thresh=(90, 255), v_thresh=(90, 255)):
+                 m_thresh=(30, 100), d_thresh=(0.7, 1.3), h_thresh=(15, 100), l_thresh=(225, 255),
+                 v_thresh=(90, 255), b_thresh=(155, 200)):
         self.s_thresh = s_thresh
         self.r_thresh = r_thresh
         self.x_thresh = x_thresh
@@ -17,6 +18,7 @@ class ImageThresh(object):
         self.h_thresh = h_thresh
         self.l_thresh = l_thresh
         self.v_thresh = v_thresh
+        self.b_thresh = b_thresh
 
     @staticmethod
     def binary_output(gray_img, abs_sobel, thresh):
@@ -76,9 +78,28 @@ class ImageThresh(object):
         return self.ret_binary(h_channel, self.h_thresh)
 
     def l_threshhold(self, warped_img):
-        hls = cv2.cvtColor(warped_img, cv2.COLOR_RGB2HLS)
-        l_channel = hls[:, :, 1]
+        luv = cv2.cvtColor(warped_img, cv2.COLOR_RGB2Luv)
+        l_channel = luv[:, :, 0]
         return self.ret_binary(l_channel, self.l_thresh)
+
+    def b_threshhold(self, warped_img):
+        lab = cv2.cvtColor(warped_img, cv2.COLOR_RGB2Lab)
+        b_channel = lab[:, :, 2]
+        return self.ret_binary(b_channel, self.b_thresh)
+
+    def l_b_threshhold(self, warped_img):
+        l_binary = self.l_threshhold(warped_img)
+        b_binary = self.b_threshhold(warped_img)
+        binary = np.zeros((warped_img.shape[0], warped_img.shape[1]))
+        binary[(l_binary == 1) | (b_binary == 1)] = 1
+        return binary
+
+    def x_b_threshhold(self, warped_img):
+        x_binary = self.x_threshhold(warped_img)
+        b_binary = self.b_threshhold(warped_img)
+        binary = np.zeros((warped_img.shape[0], warped_img.shape[1]))
+        binary[(x_binary == 1) | (b_binary == 1)] = 1
+        return binary
 
     def s_threshhold(self, warped_img):
         hls = cv2.cvtColor(warped_img, cv2.COLOR_RGB2HLS)
@@ -111,14 +132,14 @@ class ImageThresh(object):
         binary[(x_binary == 1) | (s_binary == 1)] = 1
         return binary
 
-    def s_r_threshshold(self, warped_img):
+    def s_r_threshhold(self, warped_img):
         s_binary = self.s_threshhold(warped_img)
         r_binary = self.r_threshhold(warped_img)
         binary = np.zeros((warped_img.shape[0], warped_img.shape[1]))
         binary[(s_binary == 1) | (r_binary == 1)] = 1
         return binary
 
-    def s_x_r_threshshold(self, warped_img):
+    def s_x_r_threshhold(self, warped_img):
         x_binary = self.abs_sobel_thresh(warped_img, 'x')
         s_binary = self.s_threshhold(warped_img)
         r_binary = self.r_threshhold(warped_img)
@@ -147,7 +168,7 @@ class ImageThresh(object):
 
         count_numbers = []
 
-        sr_binary = self.s_r_threshshold(warped_img)
+        sr_binary = self.s_r_threshhold(warped_img)
         sr_binary = _remove_noise(sr_binary)
         sr_histogram = np.sum(sr_binary, axis=1)
         sr_number = _count(sr_histogram)
